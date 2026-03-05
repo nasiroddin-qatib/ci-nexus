@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/nasiroddin-khatib/jenkins-ci.git'
+                git 'https://github.com/nasiroddin-khatib/jenkins-sonarqube-ci'
             }
         }
 
@@ -20,6 +20,21 @@ pipeline {
                 sh 'mvn test'
             }
         }
+
+
+	stage('Sonarqube') {
+	    steps { 
+	      withSonarQubeEnv('sonarqube') {
+		sh 'mvn sonar:sonar'
+	    }
+	} 
+}
+
+	stage('Quality Gate') {
+	    steps {
+		waitForQualityGate abortPipeline: true
+	    }
+	}
 
         stage('Package') {
             steps {
