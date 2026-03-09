@@ -240,30 +240,35 @@ Deploy Artifact to Nexus Repository
 
 ---
 
-# 📸 Project Screenshots
+## 📸 Project Screenshots
 
 ### Jenkins Pipeline Execution
 
-![Jenkins Pipeline](Screenshot/jenkins-pipeline.png)
+![Jenkins Pipeline](Screenshot/Jenkins-Pipeline-Success.png)
 
 ---
 
-### SonarQube Analysis Dashboard
+### Jenkins Build History
 
-![SonarQube Dashboard](Screenshot/sonarqube-dashboard.png)
+![Jenkins Build History](Screenshot/Jenkins-build-History.png)
+
+---
+
+### SonarQube Quality Gate Result
+
+![SonarQube Quality Gate](Screenshot/SonarQube-Quality-Checks.png)
 
 ---
 
 ### Nexus Artifact Repository
 
-![Nexus Repository](Screenshot/nexus-artifact.png)
+![Nexus Artifact](Screenshot/Nexus-Artifact-Repository.png)
 
 ---
 
-### GitHub Webhook Configuration
+### Project Structure
 
-![GitHub Webhook](Screenshot/github-webhook.png)
-
+![Project Structure](Screenshot/Project-Structure.png)
 ---
 
 # 📦 Artifact Stored in Nexus
