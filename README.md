@@ -1,126 +1,139 @@
-# 🚀 Jenkins CI Pipeline with SonarQube, Quality Gate and GitHub Webhook
+# 🚀 Jenkins CI Pipeline with SonarQube and Nexus Artifact Repository
 
 ---
 
-## 📌 Project Overview
+# 📌 Project Overview
 
-This project demonstrate a **Continuous Integration (CI) pipeline using Jenkins integrated with GitHub and SonarQube**.
+This project demonstrates a **complete Continuous Integration (CI) pipeline** using **GitHub, Jenkins, SonarQube, Maven, and Nexus Repository**.
 
 The application used in this pipeline is a **Spring Boot Employee API built with Maven**.
 
-Jenkins automatically reads the **Jenkinsfile** from the GitHub repository and executes the pipeline whenever a developer pushes code to GitHub. This is achieved using a **GitHub Webhook trigger**, which automatically starts the Jenkins pipeline on every code change.
+Whenever a developer pushes code to the GitHub repository, a **GitHub Webhook automatically triggers the Jenkins pipeline**.
 
-The pipeline performs **build, testing, static code analysis using SonarQube, Quality Gate validation, and artifact generation**.
+The pipeline performs the following tasks:
 
-This project demonstrates how **modern DevOps CI pipelines enforce code quality before generating deployable artifacts**.
+* Jenkins automatically pulls the latest source code from the GitHub repository
+* Maven builds the application and runs automated tests
+* SonarQube scans the code to detect bugs, vulnerabilities, and code quality issues
+* Quality Gate verifies whether the code meets the required quality standards
+* Maven packages the application into a deployable JAR artifact
+* The final artifact is deployed and stored in **Nexus Repository** for future deployments
+
+This architecture ensures that **only tested and quality-approved artifacts are stored in a centralized Nexus repository before deployment**.
 
 ---
 
-## CI/CD Pipeline Architecture
+# 🧭 CI Pipeline Architecture
 
 The following diagram represents the CI pipeline implemented in this project.
 
 ```
-Code Push (Developer)
-   │
-   ▼
+Developer Push Code
+        │
+        ▼
 GitHub Repository
-   │
-   ▼
-Webhook Trigger
-   │
-   ▼
+        │
+        ▼
+GitHub Webhook Trigger
+        │
+        ▼
 Jenkins Pipeline
-   │
-   ├── Checkout Code
-   ├── Build (Maven)
-   ├── Run Tests
-   ├── SonarQube Code Analysis
-   │
-   ▼
+        │
+        ├── Checkout Code
+        ├── Build (Maven)
+        ├── Run Tests
+        ├── SonarQube Code Analysis
+        │
+        ▼
 Quality Gate Check
-   │
-   ├── ❌ Failed → Pipeline Stops
-   │
-   └── ✅ Passed → Continue Pipeline
+        │
+        ├── ❌ Failed → Pipeline Stops
+        │
+        └── ✅ Passed → Continue Pipeline
                         │
                         ▼
                  Package Artifact (JAR)
+                        │
+                        ▼
+              Deploy Artifact to Nexus
 ```
 
 ---
 
-## ⚙️ Tech Stack
+# ⚙️ Tech Stack
 
 * Java 17
 * Spring Boot
 * Maven
 * Jenkins
 * SonarQube
+* Nexus Repository Manager
 * Git
 * GitHub
-* GitHub Webhook
+* GitHub Webhooks
 
 ---
 
-## 📂 Project Structure
+# 📂 Project Structure
 
 ```
-jenkins-sonarqube-ci
+jenkins-sonarqube-nexus-ci
 │
 ├── Jenkinsfile
 ├── pom.xml
 ├── README.md
-│
+├── settings.xml
 └── src
-    └── main
-        ├── java/com/example/employee
-        │     ├── EmployeeApiApplication.java
-        │     └── HelloController.java
-        │
-        └── resources
-              └── application.properties
+     └── main
+          ├── java/com/example/employee
+          │     ├── EmployeeApiApplication.java
+          │     └── HelloController.java
+          │
+          └── resources
+                └── application.properties
 ```
 
 ---
 
-## ⚙️ Jenkins Pipeline Stages
+# ⚙️ Jenkins Pipeline Stages
 
-The **Jenkinsfile** defines the following pipeline stages.
-
-### 1️⃣ Checkout
-
-Pulls the latest source code from the GitHub repository.
+The Jenkins pipeline is implemented using a **Jenkinsfile** and consists of the following stages.
 
 ---
 
-### 2️⃣ Build
+## 1️⃣ Checkout
+
+Jenkins pulls the latest source code from the **GitHub repository**.
+
+---
+
+## 2️⃣ Build
 
 ```
 mvn compile
 ```
 
-Compiles the project source code.
+Maven compiles the application source code.
 
 ---
 
-### 3️⃣ Test
+## 3️⃣ Test
 
 ```
 mvn test
 ```
 
-Runs automated unit tests.
+Runs automated unit tests to verify application functionality.
 
 ---
 
-### 4️⃣ SonarQube Code Analysis
+## 4️⃣ SonarQube Code Analysis
 
 ```
 mvn sonar:sonar
 ```
 
-Performs **static code analysis using SonarQube** and checks for:
+Performs static code analysis using SonarQube and checks for:
 
 * Bugs
 * Vulnerabilities
@@ -129,124 +142,176 @@ Performs **static code analysis using SonarQube** and checks for:
 
 ---
 
-### 5️⃣ Quality Gate Validation
+## 5️⃣ Quality Gate Validation
 
-The **SonarQube Quality Gate** ensures that the code meets predefined quality standards such as:
+After analysis, SonarQube sends the result to Jenkins using a **SonarQube Webhook**.
 
-* No critical vulnerabilities
-* No major bugs
-* Acceptable code duplication
-* Successful test execution
+Jenkins waits for the Quality Gate result.
 
-If the **Quality Gate fails**, the CI pipeline can be configured to **stop the build process**.
+* If the Quality Gate **fails**, the pipeline stops.
+* If the Quality Gate **passes**, the pipeline continues.
 
 ---
 
-### 6️⃣ Package
+## 6️⃣ Package Application
 
 ```
 mvn package
 ```
 
-Packages the application and generates the final **JAR artifact**.
-
----
-
-## 📊 SonarQube Analysis Result
-
-After the pipeline execution, **SonarQube performs a complete code quality analysis**.
-
-Example result:
-
-```
-Quality Gate: PASSED
-Bugs: 0
-Vulnerabilities: 0
-Code Smells: 0
-```
-
-This ensures **only high-quality code proceeds through the CI pipeline**.
-
----
-
-## 📦 Generated Artifact
-
-After successful pipeline execution, Maven generates the build artifact:
+This generates the final artifact:
 
 ```
 target/employee-api-1.0.0.jar
 ```
 
-This artifact can later be used for:
+---
 
-* Deployment to servers
-* Docker containerization
-* Cloud deployment (AWS, Kubernetes, etc.)
+## 7️⃣ Deploy Artifact to Nexus Repository
+
+The pipeline includes a **deploy stage** that uploads the generated artifact to **Nexus Repository Manager**.
+
+```
+mvn deploy
+```
+
+The artifact is stored and versioned in Nexus so it can later be used for deployment.
 
 ---
 
-## ▶️ Run Application Manually (Optional)
+# ⚙️ Maven Configuration for Nexus Deployment
 
-### Build the project
-
-```
-mvn package
-```
-
-### Run the application
+## 🔹 pom.xml Configuration
 
 ```
-java -jar target/employee-api-1.0.0.jar
-```
-
----
-
-## 🌐 Example Endpoint
-
-If the application is executed manually, it can be accessed at:
-
-```
-http://localhost:8080/
-```
-
-Example response:
-
-```
-Welcome to Employee API - Jenkins CI Pipeline with SonarQube!
+<distributionManagement>
+  <repository>
+    <id>nexus</id>
+    <url>http://NEXUS-IP:8081/repository/maven-releases/</url>
+  </repository>
+</distributionManagement>
 ```
 
 ---
 
-## 🎯 What This Project Demonstrates
+## 🔹 settings.xml Configuration
 
-This project proves hands-on understanding of:
+Location:
+
+```
+~/.m2/settings.xml
+```
+
+Configuration:
+
+```
+<servers>
+  <server>
+    <id>nexus</id>
+    <username>admin</username>
+    <password>password</password>
+  </server>
+</servers>
+```
+
+This allows Maven to authenticate with Nexus during deployment.
+
+---
+
+# 🔄 CI Pipeline Workflow
+
+```
+Developer Push Code → GitHub
+            ↓
+GitHub Webhook Trigger
+            ↓
+Jenkins Pipeline
+            ↓
+Build + Test
+            ↓
+SonarQube Code Analysis
+            ↓
+Quality Gate Validation
+            ↓
+Package Artifact
+            ↓
+Deploy Artifact to Nexus Repository
+```
+
+---
+
+# 📸 Project Screenshots
+
+### Jenkins Pipeline Execution
+
+![Jenkins Pipeline](Screenshot/jenkins-pipeline.png)
+
+---
+
+### SonarQube Analysis Dashboard
+
+![SonarQube Dashboard](Screenshot/sonarqube-dashboard.png)
+
+---
+
+### Nexus Artifact Repository
+
+![Nexus Repository](Screenshot/nexus-artifact.png)
+
+---
+
+### GitHub Webhook Configuration
+
+![GitHub Webhook](Screenshot/github-webhook.png)
+
+---
+
+# 📦 Artifact Stored in Nexus
+
+After successful pipeline execution, the artifact is uploaded to Nexus.
+
+Example artifact:
+
+```
+employee-api-1.0.0.jar
+```
+
+Benefits of Nexus:
+
+* Centralized artifact storage
+* Artifact version management
+* Reliable deployments
+* Artifact reuse in CD pipelines
+
+---
+
+# 🎯 What This Project Demonstrates
 
 * Jenkins CI pipeline creation
-* GitHub integration with Jenkins
 * GitHub Webhook automation
-* Pipeline as Code using Jenkinsfile
+* SonarQube integration with Jenkins
+* Quality Gate validation
 * Maven build lifecycle
-* SonarQube static code analysis
-* Quality Gate enforcement in CI pipelines
-* Automated build, test, analysis, and packaging
+* Artifact management using Nexus
+* Automated CI pipeline for build, testing, analysis, and artifact deployment
 
 ---
 
-## 💼 Why This Project Matters
+# 💼 Why This Project Matters
 
-This repository demonstrates **real-world DevOps practices**, including:
+In real DevOps environments, build artifacts are stored in **artifact repositories like Nexus** instead of being directly deployed.
 
-* Continuous Integration (CI)
-* Automated code quality checks
-* Static code analysis with SonarQube
-* GitHub Webhook triggered pipelines
-* Build automation
-* Artifact generation for deployment pipelines
+This ensures:
 
-These are **core skills required for modern DevOps and cloud engineering roles**.
+* artifact version tracking
+* centralized storage
+* reliable deployments
+* separation between CI and CD pipelines
+
+This project demonstrates a **real-world CI pipeline architecture used in many DevOps environments**.
 
 ---
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
-Developed as part of hands-on practice to strengthen **AWS, DevOps, CI/CD pipelines, and code quality automation skills**.
+Developed as part of hands-on practice to strengthen **AWS, DevOps, CI/CD pipelines, artifact management, and automation skills**.
